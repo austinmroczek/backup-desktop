@@ -1,14 +1,19 @@
 @echo off
 
-rem #################################################
-rem # 
-rem # The daily backup saves to a folder with date format YYYYMM.
-rem # 
-rem # When the month changes, that folder stops being updated, creating a monthly backup.
-rem # 
-rem # TODO: figure out how to ZIP up the old months to save space
-rem #
-rem #################################################
+:: #################################################
+:: 
+:: This daily backup script performs the following:
+::
+:: 1) Backup PasswordSafe file
+:: 2) Mirror personal files to network drive 
+:: 3) Mirror personal files to external drive
+:: 4) Make monthly backup of personal files
+:: 5) Mirror backup files to external drive
+:: 6) Mirror media files to network drive
+
+:: TODO:  fix the network drive
+
+:: #################################################
 
 
 :: ######## calculate dates ############
@@ -26,22 +31,33 @@ if %thisMonth% == "01" (
 :: add a zero in front of month
 set lastMonth=0%lastMonth%
 set lastMonth=%lastMonth:~-2%
+set lastMonthly=S:\PersonalFiles_%lastYear%%lastMonth%.7z
 
-set monthly = %thisYear%%thisMonth%
-set lastMonthly = %lastYear%%lastMonth%
+echo lastMonth %lastMonth%
+echo lastYear %lastYear%
+echo lastMonthly %lastMonthly%
 
+set monthly = "%thisYear%%thisMonth%"
+:: set lastMonthly = "%lastYear%%lastMonth%"
+
+echo thisMonth %thisMonth%
+echo thisYear %thisYear%
+echo monthly %monthly%
+echo lastMonthly %lastMonthly%
 
 call:getDate mydate
 ::call:getDayofMonth dayOfMonth
 ::call:getMonthly monthly
 
+:: ###############################################
 :: ############# set locations here ##############
+:: ###############################################
 
 set myfiles="c:\Personal"
 set myfiles_daily_network="\\192.168.1.1\Personal\Daily"
-set myfiles_daily_external=s:\Personal\Monthly\%monthly%
-set myfiles_monthly_external=s:\Personal\Monthly\%monthly%
-set myfiles_lastMonthly_external=s:\Personal\Monthly\%lastMonthly%
+set myfiles_daily_external="s:\Daily"
+
+set personal_7z=s:\PersonalFiles.7z
 
 set passwords_filename="passwords-personal.psafe3"
 set passwords="C:\Users\Admin\Google Drive\"
@@ -55,35 +71,57 @@ set videos="f:\videos"
 set network_music="\\192.168.1.1\Media\Music"
 set network_videos="\\192.168.1.1\Media\Videos"
 
-echo ######################## BACKUP PASSWORDS ##########################################
-rem copy today's password file to a backup location with date attached
+:: ###############################
+:: 1) Backup PasswordSafe file
+:: ###############################
+echo ### BACKUP PASSWORDS ###
 copy %passwords%%passwords_filename% %passwords_backup%%passwords_filename%.%mydate%
 
+
+:: ###############################
+:: 2) Mirror personal files to network drive
+:: ###############################
 echo ##### MIRROR PERSONAL FILES TO NETWORK #####
 robocopy %myfiles% %myfiles_daily_network% /MIR
 
+
+:: ###############################
+:: 3) Mirror personal files to external drive
+:: ###############################
 echo ##### MIRROR PERSONAL FILES TO EXTERNAL DRIVE #####
 robocopy %myfiles% %myfiles_daily_external% /MIR
 
+
+:: ###############################
+:: 4) Make monthly backup of personal files
+:: ###############################
+
+:: 4. a) Update a 7z file with personal files in the backup folder
+7z u -t7z %personal_7z% %myfiles%
+
+:: 4. b) If last month file doesn't exist, create it
+if not exist %lastMonthly% (
+	echo last month's backup does not exist.  creating...
+	move %personal_7z% %lastMonthly%
+)
+
+
+:: ###############################
+:: 5) Mirror backup files to external drive
+:: ###############################
 echo ##### MIRROR BACKUP FILES TO EXTERNAL DRIVE #####
 robocopy %backups% %backups_external% /MIR
 
+
+:: ###############################
+:: 6) Mirror media files to network drive
+:: ###############################
 echo ##### MIRROR MEDIA TO NETWORK #####
 echo copy music to network
 robocopy %music% %network_music% /MIR
 echo copy videos to network
 robocopy %videos% %network_videos% /MIR
 
-
-:: check if folder for last month exists
-if exist %myfiles_lastMonthly_external% (
-	echo last month's backup folder exists
-	7z a -t7z %temp%\%lastMonthly%.7z %myfiles_lastMonthly_external%
-	if exist %temp%\%lastMonthly%.7z (
-		rmdir %myfiles_lastMonthly_external%
-		move %temp%\%lastMonthly%.7z s:\Personal\Monthly\	
-	)
-)
 
 
 
