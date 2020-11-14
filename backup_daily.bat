@@ -97,7 +97,7 @@ robocopy %myfiles% %myfiles_daily_external% /MIR
 :: ###############################
 
 :: 4. a) Update a 7z file with personal files in the backup folder
-7z u -t7z %personal_7z% %myfiles%
+7z u -t7z -ms=off -uq3 %personal_7z% %myfiles%
 
 :: 4. b) If last month file doesn't exist, create it
 if not exist %lastMonthly% (
