@@ -63,13 +63,13 @@ copy %passwords_kid_network%%passwords_kid% %passwords_backup%%passwords_kid%.%t
 :: 2) Mirror personal files to network drive
 :: ###############################
 echo ##### MIRROR PERSONAL FILES TO NETWORK #####
-robocopy %myfiles% %myfiles_daily_network% /MIR /NFL /NDL /NJH
+robocopy %myfiles% %myfiles_daily_network% /MIR /NFL /NDL /NJH /XF Thumbs.db
 
 :: ###############################
 :: 3) Mirror personal files to external drive
 :: ###############################
 echo ##### MIRROR PERSONAL FILES TO EXTERNAL DRIVE #####
-robocopy %myfiles% %myfiles_daily_external% /MIR /NFL /NDL /NJH
+robocopy %myfiles% %myfiles_daily_external% /MIR /NFL /NDL /NJH /XF Thumbs.db
 
 :: ###############################
 :: 4) Make monthly backup of personal files
@@ -84,16 +84,16 @@ if not exist %lastMonthly% (
 :: 5) Mirror backup files to external drive
 :: ###############################
 echo ##### MIRROR BACKUP FILES TO EXTERNAL DRIVE #####
-robocopy %backups% %backups_external% /MIR /NFL /NDL /NJH
+robocopy %backups% %backups_external% /MIR /NFL /NDL /NJH /XF Thumbs.db
 
 :: ###############################
 :: 6) Mirror media files to network drive
 :: ###############################
 echo ##### MIRROR MEDIA TO NETWORK #####
 echo copy music to network
-robocopy %music% %network_music% /MIR /NFL /NDL /NJH
+robocopy %music% %network_music% /MIR /NFL /NDL /NJH /XF Thumbs.db
 echo copy videos to network
-robocopy %videos% %network_videos% /MIR /NFL /NDL /NJH
+robocopy %videos% %network_videos% /MIR /NFL /NDL /NJH /XF Thumbs.db
 
 :: ###############################
 :: 7) Make monthly backup of pictures
